@@ -1,11 +1,11 @@
 #define PERIOD 500 // period in micro secs (us)
 #define LED 4
+#define VIB_ARR_SIZE 30 // array size for vibration data storage
 
 int analog_Z = A0;
 int analog_Y = A1;
 
-int vibArrSize = 200;
-int analogVibArr[vibArrSize];
+int analogVibArr[VIB_ARR_SIZE];
 
 int z_max;
 int z_min;
@@ -35,12 +35,12 @@ void loop() {
   z_min = analogVibArr[0];
 
   // finding max
-  for (int i = 1; i < 200; i++) {
+  for (int i = 1; i < VIB_ARR_SIZE; i++) {
     z_max = max(analogVibArr[i],z_max);
   } // for
 
   // finding min
-  for (int i = 1; i < 200; i++) {
+  for (int i = 1; i < VIB_ARR_SIZE; i++) {
     z_min = min(analogVibArr[i],z_min);
   } // for
 
@@ -52,7 +52,7 @@ void loop() {
     Serial.print("Vibration Amplitude: ");
     Serial.println(vibAmpl);
     digitalWrite(LED,HIGH);
-    delay(1000);      // wait 1 sec
+    delay(1000);      
     digitalWrite(LED,LOW);
 
   }
@@ -60,7 +60,7 @@ void loop() {
 } // loop
 
 void sample() {
-  for (int i = 0; i < 200; i++) {
+  for (int i = 0; i < VIB_ARR_SIZE; i++) {
     analogVibArr[i] = analogRead(analog_Z);
     Serial.print("Analog Signal (in mV): ");
     Serial.println(analogVibArr[i]);

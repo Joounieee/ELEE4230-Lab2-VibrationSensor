@@ -4,7 +4,8 @@
 int analog_Z = A0;
 int analog_Y = A1;
 
-int analogVibArr[10];
+int vibArrSize = 200;
+int analogVibArr[vibArrSize];
 
 int z_max;
 int z_min;
@@ -13,7 +14,7 @@ int y_min;
 
 int vibAmpl; // used for intemediate calculation of vib
 
-int threshold = 50;
+int threshold = 70;
 
 unsigned long last_us = 0L;
 
@@ -34,12 +35,12 @@ void loop() {
   z_min = analogVibArr[0];
 
   // finding max
-  for (int i = 1; i < 10; i++) {
+  for (int i = 1; i < 200; i++) {
     z_max = max(analogVibArr[i],z_max);
   } // for
 
   // finding min
-  for (int i = 1; i < 10; i++) {
+  for (int i = 1; i < 200; i++) {
     z_min = min(analogVibArr[i],z_min);
   } // for
 
@@ -53,13 +54,13 @@ void loop() {
     digitalWrite(LED,HIGH);
     delay(1000);      // wait 1 sec
     digitalWrite(LED,LOW);
-    
-  } 
-  
+
+  }
+
 } // loop
 
 void sample() {
-  for (int i = 0; i < 10; i++) {
+  for (int i = 0; i < 200; i++) {
     analogVibArr[i] = analogRead(analog_Z);
     Serial.print("Analog Signal (in mV): ");
     Serial.println(analogVibArr[i]);

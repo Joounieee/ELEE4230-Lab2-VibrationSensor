@@ -1,22 +1,26 @@
+#include <LiquidCrystal.h>
+
 #define PERIOD 500 // period in micro secs (us)
-#define LED 4
 #define VIB_ARR_SIZE 30 // array size for vibration data storage
 
-int analog_Z = A0;
-int analog_Y = A1;
+// pin declarations
+const int rs = 12, en = 11, d4 = 5, d5 = 4, d6 = 3, d7 = 2;
+const int analog_Z = A0;
+const int analog_Y = A1;
+LiquidCrystal lcd(rs, en, d4, d5, d6, d7);
 
-int analogVibArrZ[VIB_ARR_SIZE];
-int analogVibArrY[VIB_ARR_SIZE];
+float analogVibArrZ[VIB_ARR_SIZE];
+float analogVibArrY[VIB_ARR_SIZE];
 
-int z_max;
-int z_min;
-int y_max;
-int y_min;
+float z_max;
+float z_min;
+float y_max;
+float y_min;
 
-int vibAmplZ;
-int vibAmplY;
+float vibAmplZ;
+float vibAmplY;
 
-int threshold = 70;
+float threshold = 70.0;
 
 unsigned long last_us = 0L;
 
@@ -24,29 +28,146 @@ int counter = 0;
 
 void setup() {
   Serial.begin(9600);
-  pinMode(LED,OUTPUT);
+  lcd.begin(16,2);
+  pinMode(6,OUTPUT);
   delay(2000);    // waits 2 secs before calibration
-  /*
-  int tf_calib_Z[10];
-  int tf_calib_Y[10];
+
+  lcd.setCursor(0,0);
+  lcd.print("Get ready for");
+  lcd.setCursor(0,1);
+  lcd.print("calibration.");
+  delay(1000);
+  lcd.clear();
+
+  float tf_calib_Z[10];
+  float tf_calib_Y[10];
+  float sum_Zup;
+  float avg_Zup;
+  float sum_Yup;
+  float avg_Yup;
+  float sum_Zdown;
+  float avg_Zdown;
+  float sum_Ydown;
+  float avg_Ydown;
+
+
+  //
+  // Z calib
+  //
+  lcd.setCursor(0,0);
+  lcd.print("Click button");
+  lcd.setCursor(0,1);
+  lcd.print("for up-Z");
+  while (!digitalRead(6)) {
+    delay(25);
+  }
+  delay(1000);
   for (int i = 0; i < 10; i++) {
     tf_calib_Z[i] = analogRead(analog_Z);
+  } // for
+  sum_Zup = 0;
+  for (int i = 0; i < 10; i++) {
+    sum_Zup += tf_calib_Z[i];
+  } // for
+  avg_Zup = sum_Zup / 10;
+  lcd.clear();
+
+  lcd.setCursor(0,0);
+  lcd.print("Finished up-Z");
+  lcd.setCursor(0,1);
+  lcd.print("calibration");
+  delay(1000);
+  lcd.clear();
+
+  lcd.setCursor(0,0);
+  lcd.print("Click button");
+  lcd.setCursor(0,1);
+  lcd.print("for down-Z");
+  while (!digitalRead(6)) {
+    delay(25);
+  }
+  delay(1000);
+  for (int i = 0; i < 10; i++) {
+    tf_calib_Z[i] = analogRead(analog_Z);
+  } // for
+  sum_Zdown = 0;
+  for (int i = 0; i < 10; i++) {
+    sum_Zdown += tf_calib_Z[i];
+  } // for
+  avg_Zdown = sum_Zdown / 10;
+  lcd.clear();
+
+  lcd.setCursor(0,0);
+  lcd.print("Finished down-Z");
+  lcd.setCursor(0,1);
+  lcd.print("calibration");
+  delay(1000);
+  lcd.clear();
+
+  //
+  // y calib
+  //
+  lcd.setCursor(0,0);
+  lcd.print("Click button");
+  lcd.setCursor(0,1);
+  lcd.print("for up-Y");
+  while (!digitalRead(6)) {
+    delay(25);
+  }
+  delay(1000);
+  for (int i = 0; i < 10; i++) {
     tf_calib_Y[i] = analogRead(analog_Y);
   } // for
-
-  int sum_Z = 0;
-  int sum_Y = 0;
+  sum_Yup = 0;
   for (int i = 0; i < 10; i++) {
-    sum_Z += tf_calib_Z[i];
-    sum_Y += tf_calib_Y[i]; 
+    sum_Yup += tf_calib_Y[i];
   } // for
+  avg_Yup = sum_Yup / 10;
+  lcd.clear();
 
-  int avg_Z = sum_Z / 10;
-  int avg_Y = sum_Y / 10;
+  lcd.setCursor(0,0);
+  lcd.print("Finished up-Y");
+  lcd.setCursor(0,1);
+  lcd.print("calibration");
+  delay(1000);
+  lcd.clear();
 
-  */
-  
-  
+  lcd.setCursor(0,0);
+  lcd.print("Click button");
+  lcd.setCursor(0,1);
+  lcd.print("for down-Y");
+  while (!digitalRead(6)) {
+    delay(25);
+  }
+  delay(1000);
+  for (int i = 0; i < 10; i++) {
+    tf_calib_Y[i] = analogRead(analog_Y);
+  } // for
+  sum_Ydown = 0;
+  for (int i = 0; i < 10; i++) {
+    sum_Ydown += tf_calib_Y[i];
+  } // for
+  avg_Ydown = sum_Ydown / 10;
+  lcd.clear();
+
+  lcd.setCursor(0,0);
+  lcd.print("Finished down-Y");
+  lcd.setCursor(0,1);
+  lcd.print("calibration");
+  delay(1000);
+  lcd.clear();
+
+  lcd.setCursor(0,0);
+  lcd.print("Calibration");
+  lcd.setCursor(0,1);
+  lcd.print("complete.");
+  delay(1000);
+  lcd.clear();
+
+  lcd.setCursor(0,0);
+  lcd.print("Z:");
+  lcd.setCursor(0,1);
+  lcd.print("Y:");
 } // setup
 
 void loop() {
@@ -56,15 +177,9 @@ void loop() {
        last_us += PERIOD;
        sample();
     } // if
-    
-    // output on serial monitor
-    Serial.print("Analog Signal Z-axis (in mV): ");
-    Serial.println(analogVibArrZ[counter]);
-    Serial.print("Analog Signal Y-axis (in mV): ");
-    Serial.println(analogVibArrY[counter]);
     counter++;
   } // while
-  
+
   z_max = analogVibArrZ[0];
   z_min = analogVibArrZ[0];
   y_max = analogVibArrY[0];
@@ -86,29 +201,30 @@ void loop() {
   vibAmplZ = abs(z_max - z_min);
   vibAmplY = abs(y_max - y_min);
 
-  // outputting vibAmpl
-  for (int i = 0; i < 20; i++) {
-    Serial.print("vibAmplZ: ");
-    Serial.println(vibAmplZ);
-    Serial.print("vibAmplY: ");
-    Serial.println(vibAmplY);    
-  } // for
+  printAmplZ(vibAmplZ);
+  delay(140);
+  printAmplY(vibAmplY);
+  delay(140);
 
   // checking if vib is above threshold
-  if ((vibAmplZ || vibAmplY) > threshold) {
-    Serial.print("Vibration Amplitude (Z): ");
-    Serial.println(vibAmplZ);
-    Serial.print("Vibration Amplitude (Y): ");
-    Serial.println(vibAmplY);
-    digitalWrite(LED,HIGH);
-    delay(1000);      
-    digitalWrite(LED,LOW);
-
+  if ((vibAmplZ > threshold)||(vibAmplY > threshold)) {
+    lcd.setCursor(8,0);
+    lcd.print("WARNING!");
   } // if
 
 } // loop
 
 void sample() {
-  analogVibArrZ[counter] = analogRead(analog_Z);
-  analogVibArrY[counter] = analogRead(analog_Y);
+  analogVibArrZ[counter] = 0.1475 * (analogRead(analog_Z) - 416);
+  analogVibArrY[counter] = 0.1432 * (analogRead(analog_Y) - 406) + 9.81;
 } // sample
+
+void printAmplZ(float ampl) {
+  lcd.setCursor(2,0);
+  lcd.print(ampl);
+} // printAmplZ
+
+void printAmplY(float ampl) {
+  lcd.setCursor(2,1);
+  lcd.print(ampl);
+} // printAmplY
